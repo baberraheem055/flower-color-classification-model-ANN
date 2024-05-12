@@ -1,76 +1,4 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# # Planar data classification with one hidden layer
-# 
-# Welcome to your week 3 programming assignment! It's time to build your first neural network, which will have one hidden layer. Now, you'll notice a big difference between this model and the one you implemented previously using logistic regression.
-# 
-# By the end of this assignment, you'll be able to:
-# 
-# - Implement a 2-class classification neural network with a single hidden layer
-# - Use units with a non-linear activation function, such as tanh
-# - Compute the cross entropy loss
-# - Implement forward and backward propagation
-# 
-# ## Important Note on Submission to the AutoGrader
-# 
-# Before submitting your assignment to the AutoGrader, please make sure you are not doing the following:
-# 
-# 1. You have not added any _extra_ `print` statement(s) in the assignment.
-# 2. You have not added any _extra_ code cell(s) in the assignment.
-# 3. You have not changed any of the function parameters.
-# 4. You are not using any global variables inside your graded exercises. Unless specifically instructed to do so, please refrain from it and use the local variables instead.
-# 5. You are not changing the assignment code where it is not required, like creating _extra_ variables.
-# 
-# If you do any of the following, you will get something like, `Grader Error: Grader feedback not found` (or similarly unexpected) error upon submitting your assignment. Before asking for help/debugging the errors in your assignment, check for these first. If this is the case, and you don't remember the changes you have made, you can get a fresh copy of the assignment by following these [instructions](https://www.coursera.org/learn/neural-networks-deep-learning/supplement/xLEC1/optional-downloading-your-notebook-downloading-your-workspace-and-refreshing).
-
-# ## Table of Contents
-# - [1 - Packages](#1)
-# - [2 - Load the Dataset](#2)
-#     - [Exercise 1](#ex-1)
-# - [3 - Simple Logistic Regression](#3)
-# - [4 - Neural Network model](#4)
-#     - [4.1 - Defining the neural network structure](#4-1)
-#         - [Exercise 2 - layer_sizes](#ex-2)
-#     - [4.2 - Initialize the model's parameters](#4-2)
-#         - [Exercise 3 - initialize_parameters](#ex-3)
-#     - [4.3 - The Loop](#4-3)
-#         - [Exercise 4 - forward_propagation](#ex-4)
-#     - [4.4 - Compute the Cost](#4-4)
-#         - [Exercise 5 - compute_cost](#ex-5)
-#     - [4.5 - Implement Backpropagation](#4-5)
-#         - [Exercise 6 - backward_propagation](#ex-6)
-#     - [4.6 - Update Parameters](#4-6)
-#         - [Exercise 7 - update_parameters](#ex-7)
-#     - [4.7 - Integration](#4-7)
-#         - [Exercise 8 - nn_model](#ex-8)
-# - [5 - Test the Model](#5)
-#     - [5.1 - Predict](#5-1)
-#         - [Exercise 9 - predict](#ex-9)
-#     - [5.2 - Test the Model on the Planar Dataset](#5-2)
-# - [6 - Tuning hidden layer size (optional/ungraded exercise)](#6)
-# - [7- Performance on other datasets](#7)
-
-# <a name='1'></a>
-# # 1 - Packages
-# 
-# First import all the packages that you will need during this assignment.
-# 
-# - [numpy](https://www.numpy.org/) is the fundamental package for scientific computing with Python.
-# - [sklearn](http://scikit-learn.org/stable/) provides simple and efficient tools for data mining and data analysis. 
-# - [matplotlib](http://matplotlib.org) is a library for plotting graphs in Python.
-# - testCases provides some test examples to assess the correctness of your functions
-# - planar_utils provide various useful functions used in this assignment
-
-# In[ ]:
-
-
-### v1.2
-
-
-# In[5]:
-
-
+# color classification by logistic regression 
 # Package imports
 import numpy as np
 import copy
@@ -83,96 +11,30 @@ import sklearn.linear_model
 from planar_utils import plot_decision_boundary, sigmoid, load_planar_dataset, load_extra_datasets
 
 get_ipython().run_line_magic('matplotlib', 'inline')
-
 get_ipython().run_line_magic('load_ext', 'autoreload')
 get_ipython().run_line_magic('autoreload', '2')
 
 
-# <a name='2'></a>
-# # 2 - Load the Dataset 
-# 
-# 
-
-# In[6]:
-
-
 X, Y = load_planar_dataset()
-
-
-# Visualize the dataset using matplotlib. The data looks like a "flower" with some red (label y=0) and some blue (y=1) points. Your goal is to build a model to fit this data. In other words, we want the classifier to define regions as either red or blue.
-
-# In[7]:
-
+#The data looks like a "flower" with some red (label y=0) and some blue (y=1) points
 
 # Visualize the data:
 plt.scatter(X[0, :], X[1, :], c=Y, s=40, cmap=plt.cm.Spectral);
 
 
-# You have:
 #     - a numpy-array (matrix) X that contains your features (x1, x2)
 #     - a numpy-array (vector) Y that contains your labels (red:0, blue:1).
-# 
-# First, get a better sense of what your data is like. 
-# 
-# <a name='ex-1'></a>
-# ### Exercise 1 
-# 
-# How many training examples do you have? In addition, what is the `shape` of the variables `X` and `Y`? 
-# 
-# **Hint**: How do you get the shape of a numpy array? [(help)](https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.shape.html)
-
-# In[8]:
 
 
-# (≈ 3 lines of code)
-# shape_X = ...
-# shape_Y = ...
-# training set size
-# m = ...
-# YOUR CODE STARTS HERE
 shape_X = X.shape
 shape_Y = Y.shape
 m = shape_X[1]
-# YOUR CODE ENDS HERE
-
-print ('The shape of X is: ' + str(shape_X))
-print ('The shape of Y is: ' + str(shape_Y))
-print ('I have m = %d training examples!' % (m))
 
 
-# **Expected Output**:
-#        
-# <table style="width:20%">
-#   <tr>
-#     <td> shape of X </td>
-#     <td> (2, 400) </td> 
-#   </tr>
-#   <tr>
-#     <td>shape of Y</td>
-#     <td>(1, 400) </td> 
-#     </tr>
-#     <tr>
-#     <td>m</td>
-#     <td> 400 </td> 
-#   </tr>
-# </table>
-
-# <a name='3'></a>
-# ## 3 - Simple Logistic Regression
-# 
-# Before building a full neural network, let's check how logistic regression performs on this problem. You can use sklearn's built-in functions for this. Run the code below to train a logistic regression classifier on the dataset.
-
-# In[9]:
-
-
+# Before building a full neural network, 
 # Train the logistic regression classifier
 clf = sklearn.linear_model.LogisticRegressionCV();
 clf.fit(X.T, Y.T);
-
-
-# You can now plot the decision boundary of these models! Run the code below.
-
-# In[10]:
 
 
 # Plot the decision boundary for logistic regression
@@ -185,67 +47,24 @@ print ('Accuracy of logistic regression: %d ' % float((np.dot(Y,LR_predictions) 
        '% ' + "(percentage of correctly labelled datapoints)")
 
 
-# **Expected Output**:
-# 
-# <table style="width:20%">
-#   <tr>
-#     <td>Accuracy</td>
-#     <td> 47% </td> 
-#   </tr>
-#   
-# </table>
-# 
-
-# **Interpretation**: The dataset is not linearly separable, so logistic regression doesn't perform well. Hopefully a neural network will do better. Let's try this now! 
-
-# <a name='4'></a>
-# ## 4 - Neural Network model
-# 
 # Logistic regression didn't work well on the flower dataset. Next, you're going to train a Neural Network with a single hidden layer and see how that handles the same problem.
-# 
-# **The model**:
-# <img src="images/classification_kiank.png" style="width:600px;height:300px;">
-# 
-# **Mathematically**:
-# 
-# For one example $x^{(i)}$:
-# $$z^{[1] (i)} =  W^{[1]} x^{(i)} + b^{[1]}\tag{1}$$ 
-# $$a^{[1] (i)} = \tanh(z^{[1] (i)})\tag{2}$$
-# $$z^{[2] (i)} = W^{[2]} a^{[1] (i)} + b^{[2]}\tag{3}$$
-# $$\hat{y}^{(i)} = a^{[2] (i)} = \sigma(z^{ [2] (i)})\tag{4}$$
-# $$y^{(i)}_{prediction} = \begin{cases} 1 & \mbox{if } a^{[2](i)} > 0.5 \\ 0 & \mbox{otherwise } \end{cases}\tag{5}$$
-# 
-# Given the predictions on all the examples, you can also compute the cost $J$ as follows: 
-# $$J = - \frac{1}{m} \sum\limits_{i = 0}^{m} \large\left(\small y^{(i)}\log\left(a^{[2] (i)}\right) + (1-y^{(i)})\log\left(1- a^{[2] (i)}\right)  \large  \right) \small \tag{6}$$
-# 
-# **Reminder**: The general methodology to build a Neural Network is to:
-#     1. Define the neural network structure ( # of input units,  # of hidden units, etc). 
-#     2. Initialize the model's parameters
-#     3. Loop:
+
+
+# The general methodology to build a Neural Network is to:
+#    1. Define the neural network structure ( # of input units,  # of hidden units, etc). 
+#    2. Initialize the model's parameters
+#    3. Loop:
 #         - Implement forward propagation
 #         - Compute loss
 #         - Implement backward propagation to get the gradients
 #         - Update parameters (gradient descent)
 # 
-# In practice, you'll often build helper functions to compute steps 1-3, then merge them into one function called `nn_model()`. Once you've built `nn_model()` and learned the right parameters, you can make predictions on new data.
+# In practice, we will build helper functions to compute steps 1-3, then merge them into one function called `nn_model()`. Once we built `nn_model()` and learned the right parameters, we can make predictions on new data.
 
-# <a name='4-1'></a>
-# ### 4.1 - Defining the neural network structure ####
-# 
-# <a name='ex-2'></a>
-# ### Exercise 2 - layer_sizes 
-# 
 # Define three variables:
 # - n_x: the size of the input layer
-# - n_h: the size of the hidden layer (**set this to 4, as `n_h = 4`, but only for this Exercise 2**) 
+# - n_h: the size of the hidden layer (**set this to 4, 
 # - n_y: the size of the output layer
-# 
-# **Hint**: Use shapes of X and Y to find n_x and n_y. Also, hard code the hidden layer size to be 4.
-
-# In[11]:
-
-
-# GRADED FUNCTION: layer_sizes ->> the number of features in your dataset.
 
 def layer_sizes(X, Y):
     """
